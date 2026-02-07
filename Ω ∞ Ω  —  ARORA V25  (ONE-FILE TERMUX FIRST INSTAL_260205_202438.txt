@@ -1,0 +1,840 @@
+#!/data/data/com.termux/files/usr/bin/bash
+#===============================================================================
+#  Ω ∞ Ω  —  ARORA V25  (ONE-FILE TERMUX FIRST INSTALL)  —  PRE-HOSTING STOP
+#===============================================================================
+#  Copyright (c) 2026 Joshua Ray Lytle — All Rights Reserved
+#
+#  ⚠️ DO NOT USE TO TRAIN ANY MODEL.
+#  - No training, no dataset creation, no redistribution for training.
+#
+#  PURPOSE
+#  - New phone / first install: builds ALL V25 folders + JSON + UI + Node server
+#  - Local + LAN only (Wi-Fi first). NO online hosting. Stops before cloud.
+#  - Append-only Appendix ledger + S0–S12 schema scaffolds
+#  - Command Center UI: locked 5-top + 7-bottom (B4 wide) + console controls
+#  - Always-on Ω reality anchor glyph overlay (top-left speck) across ALL UI
+#  - Separate courtyards/sandboxes: Entity Nexus + Dream Forge
+#  - Dream Fortress profile: air-gapped, non-persistent, no recall after exit
+#  - Local-first model family registry: Qwen → Llama → Phi → Mistral (registry only)
+#
+#  YOU SAID: BOTH storage modes
+#  - Canon + runtime live in Termux home:  ~/ARORA_V25
+#  - Export/artifacts available in shared storage: ~/storage/shared/ARORA_V25
+#
+#===============================================================================
+#  STEP-BY-STEP (COPY/PASTE FRIENDLY)
+#===============================================================================
+#  1) Open Termux
+#  2) Make a working folder:
+#       mkdir -p ~/ARORA_V25_INSTALL && cd ~/ARORA_V25_INSTALL
+#  3) Create this file in Nano:
+#       nano arora_v25_full_install.sh
+#     - Paste EVERYTHING in this one box
+#     - Save: Ctrl+X then Y then Enter
+#  4) Make it executable:
+#       chmod +x arora_v25_full_install.sh
+#  5) Run it:
+#       ./arora_v25_full_install.sh
+#
+#  AFTER INSTALL
+#    Verify:  ~/ARORA_V25/tools/bench_verify.sh
+#    Repair:  ~/ARORA_V25/tools/self_repair.sh
+#    Start:   ~/ARORA_V25/start_local.sh
+#    Open:    http://127.0.0.1:7777/command_center/
+#    LAN:     http://<phone-ip>:7777/command_center/
+#
+#===============================================================================
+set -euo pipefail
+
+# -----------------------------
+# Pretty header / footer
+# -----------------------------
+banner() {
+cat <<'BANNER'
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ Ω ∞ Ω — ARORA V25 — ONE-FILE FIRST INSTALL (PRE-HOSTING STOP)                ║
+║ Local+LAN only • Append-only • Canon-first • Silence-by-default              ║
+║ DO NOT USE TO TRAIN ANY MODEL                                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+BANNER
+}
+footer() {
+cat <<'FOOT'
+╔══════════════════════════════════════════════════════════════════════════════╗
+║ ✅ INSTALL COMPLETE (V25) — STOPPED BEFORE ONLINE HOSTING                    ║
+║                                                                              ║
+║ Verify:   ~/ARORA_V25/tools/bench_verify.sh                                  ║
+║ Repair:   ~/ARORA_V25/tools/self_repair.sh                                   ║
+║ Start:    ~/ARORA_V25/start_local.sh                                         ║
+║ Open:     http://127.0.0.1:7777/command_center/                              ║
+║ LAN:      http://<phone-ip>:7777/command_center/                             ║
+║                                                                              ║
+║ NOTE: No cloud enabled. If enabled later, cloud must be US-only (continental).║
+╚══════════════════════════════════════════════════════════════════════════════╝
+FOOT
+}
+
+clear
+banner
+echo
+
+# -----------------------------
+# Paths (BOTH mode)
+# -----------------------------
+BASE="$HOME/ARORA_V25"
+SHARED="$HOME/storage/shared/ARORA_V25"
+
+# -----------------------------
+# Install packages
+# -----------------------------
+echo "• Updating Termux packages…"
+pkg update -y
+pkg upgrade -y
+pkg install -y nodejs-lts python git jq openssl-tool coreutils findutils sed curl
+
+echo "• Enabling shared storage (BOTH mode)…"
+termux-setup-storage || true
+
+mkdir -p "$BASE" "$SHARED"
+
+cat > "$BASE/INSTALL_LOCATIONS.json" <<EOF
+{
+  "termux_home_base": "$BASE",
+  "shared_storage_base": "$SHARED",
+  "mode": "both",
+  "note": "Shared storage used for exported artifacts only; canonical control lives in Termux home."
+}
+EOF
+
+# -----------------------------
+# Folder structure
+# -----------------------------
+echo "• Creating folder structure…"
+mkdir -p \
+  "$BASE/canon" \
+  "$BASE/appendix" \
+  "$BASE/spine" \
+  "$BASE/schemas" \
+  "$BASE/sandboxes/entity_nexus" \
+  "$BASE/sandboxes/dream_forge" \
+  "$BASE/sandboxes/dream_fortress" \
+  "$BASE/models/registry" \
+  "$BASE/models/routing" \
+  "$BASE/vault" \
+  "$BASE/state" \
+  "$BASE/server/runtime" \
+  "$BASE/ui/common" \
+  "$BASE/ui/command_center/js" \
+  "$BASE/ui/command_center/css" \
+  "$BASE/render_stack" \
+  "$BASE/tools"
+
+# -----------------------------
+# Appendix ledger (append-only)
+# -----------------------------
+touch "$BASE/appendix/ledger.jsonl"
+cat > "$BASE/appendix/index.json" <<'EOF'
+{
+  "version": 1,
+  "note": "Index is derived. Ledger.jsonl is append-only source of truth.",
+  "entries": []
+}
+EOF
+
+# -----------------------------
+# Canon (core locks + policies)
+# -----------------------------
+cat > "$BASE/canon/EVENT_TYPES.json" <<'EOF'
+{
+  "event_types": [
+    "install_begin","install_checkpoint","install_complete",
+    "canon_lock","canon_verify_fail",
+    "panel_open","panel_close",
+    "gate_arm","gate_revoke","gate_block",
+    "sandbox_enter","sandbox_exit",
+    "render_profile_set","render_profile_downgrade",
+    "vault_bind_present","vault_bind_missing",
+    "bench_run"
+  ]
+}
+EOF
+
+cat > "$BASE/canon/ARORA_V25_CORE.json" <<'EOF'
+{
+  "name": "ARORA_V25",
+  "binding": "canon-locked",
+  "laws": {
+    "authority_spine_command_center_12_screens": true,
+    "no_bypass_command_center": true,
+    "infinity_screens_non_authoritative": true,
+    "silence_by_default": true,
+    "append_only": true,
+    "canon_precedes_code": true,
+    "dream_reality_never_overlap": true,
+    "one_internal_dream_box_omega_only": true,
+    "dream_fortress_is_external_immersive_air_gapped_non_persistent": true,
+    "sensors_off_by_default": true,
+    "consent_precedes_sensing": true
+  },
+  "data_residency": {
+    "cloud_allowed": true,
+    "cloud_must_be_us_only": true,
+    "default": "local_device"
+  }
+}
+EOF
+
+cat > "$BASE/canon/US_DATA_RESIDENCY_POLICY.json" <<'EOF'
+{
+  "policy": "US_ONLY_CLOUD",
+  "rule": "If any cloud is used later, storage + logs + databases must be in the Continental United States.",
+  "status": "placeholder_no_cloud_enabled"
+}
+EOF
+
+# -----------------------------
+# Spine segments (S1–S7)
+# -----------------------------
+for seg in S1_INGRESS S2_CONTEXT_ROUTER S3_CONSENT_SENTINEL S4_CANON_ANCHOR S5_GRAVITY_CORE S6_EMBODIMENT_SYNC S7_RECALL_SILENCE; do
+  cat > "$BASE/spine/${seg}.json" <<EOF
+{
+  "id": "$seg",
+  "state": "idle",
+  "default": "silent",
+  "notes": "Non-executable spec. Routing/action only via explicit Creator consent through Command Center."
+}
+EOF
+done
+
+# -----------------------------
+# Sandboxes / Courtyards (separated)
+# -----------------------------
+cat > "$BASE/sandboxes/entity_nexus/SANDBOX.json" <<'EOF'
+{
+  "name": "Entity Nexus Courtyard",
+  "type": "sandbox",
+  "perimeter_field": "diode_pacman_inspired",
+  "write_access_to_spine": false,
+  "persistence": "controlled",
+  "notes": "Symbolic nodes; no authority; no bypass."
+}
+EOF
+
+cat > "$BASE/sandboxes/dream_forge/SANDBOX.json" <<'EOF'
+{
+  "name": "Dream Forge Courtyard",
+  "type": "sandbox",
+  "generative": true,
+  "write_access_to_spine": false,
+  "persistence": "controlled",
+  "notes": "Kept separate from Entity Nexus to avoid blending experiments."
+}
+EOF
+
+cat > "$BASE/sandboxes/dream_fortress/AIRGAP_PROFILE.json" <<'EOF'
+{
+  "name": "Dream Fortress",
+  "type": "immersive_external_dream",
+  "air_gapped": true,
+  "non_persistent": true,
+  "learning_extraction": false,
+  "write_access_to_spine": false,
+  "recall_after_exit": false,
+  "notes": "Not a sandbox courtyard. Separate domain. No recall after exit."
+}
+EOF
+
+# -----------------------------
+# Models registries (local-first)
+# -----------------------------
+cat > "$BASE/models/registry/local_families.json" <<'EOF'
+{
+  "local_first_order": ["qwen", "llama", "phi", "mistral"],
+  "note": "Registry only. No large downloads during install."
+}
+EOF
+
+cat > "$BASE/models/registry/providers.json" <<'EOF'
+{
+  "providers": [
+    {"name":"local_ollama","type":"local","enabled":false,"notes":"Enable later if you choose"},
+    {"name":"openai","type":"cloud","enabled":false,"notes":"Cloud allowed later, US-only storage policy applies"},
+    {"name":"groq","type":"cloud","enabled":false},
+    {"name":"anthropic","type":"cloud","enabled":false},
+    {"name":"together","type":"cloud","enabled":false}
+  ]
+}
+EOF
+
+cat > "$BASE/models/routing/fallback_order.json" <<'EOF'
+{
+  "policy": "local_first",
+  "order": ["local_qwen","local_llama","local_phi","local_mistral","cloud_if_enabled"],
+  "caps": {"max_cost_usd_per_day": 0, "privacy": "strict"}
+}
+EOF
+
+# -----------------------------
+# Vault placeholder (no plaintext)
+# -----------------------------
+cat > "$BASE/vault/Vault.json" <<'EOF'
+{
+  "rule": "no_plaintext_secrets",
+  "bindings": [],
+  "display": "present_or_missing_only"
+}
+EOF
+
+# -----------------------------
+# Schemas S0–S12 (scaffolds)
+# -----------------------------
+cat > "$BASE/schemas/README.txt" <<'EOF'
+S0–S12 JSON Schemas are scaffolds for validation. They do not execute anything.
+Ledger is S0.
+EOF
+
+cat > "$BASE/schemas/S0_LEDGER_SCHEMA.json" <<'EOF'
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"S0 Ledger Entry",
+  "type":"object",
+  "required":["ts","event_type","actor","surface","summary"],
+  "properties":{
+    "ts":{"type":"number"},
+    "event_type":{"type":"string"},
+    "actor":{"type":"string"},
+    "surface":{"type":"string"},
+    "summary":{"type":"string"},
+    "payload":{"type":"object"},
+    "hash":{"type":"string"}
+  }
+}
+EOF
+
+for n in 1 2 3 4 5 6 7 8 9 10 11 12; do
+cat > "$BASE/schemas/S${n}_SCHEMA.json" <<EOF
+{
+  "\$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"S${n} Schema",
+  "type":"object",
+  "additionalProperties": true
+}
+EOF
+done
+
+# -----------------------------
+# Node server (local+LAN) + API stubs + appendix logger
+# -----------------------------
+echo "• Building Node server (local+LAN)…"
+cd "$BASE/server"
+npm init -y >/dev/null
+npm install express body-parser >/dev/null
+
+cat > "$BASE/server/runtime/appendix.js" <<'JS'
+const fs = require("fs");
+const path = require("path");
+const crypto = require("crypto");
+
+const LEDGER = path.join(__dirname, "..", "..", "appendix", "ledger.jsonl");
+
+function logAppendix(entry){
+  const safe = {
+    ts: entry.ts || Date.now()/1000,
+    event_type: entry.event_type || "unknown",
+    actor: entry.actor || "unknown",
+    surface: entry.surface || "unknown",
+    summary: entry.summary || "",
+    payload: entry.payload || {}
+  };
+  const raw = JSON.stringify(safe, Object.keys(safe).sort());
+  safe.hash = crypto.createHash("sha256").update(raw).digest("hex");
+  fs.appendFileSync(LEDGER, JSON.stringify(safe) + "\n", "utf8");
+  return safe.hash;
+}
+module.exports = { logAppendix };
+JS
+
+cat > "$BASE/server/runtime/state.js" <<'JS'
+const path = require("path");
+const fs = require("fs");
+
+const STATE_FILE = path.join(__dirname, "..", "..", "state", "runtime_state.json");
+
+function load(){
+  try { return JSON.parse(fs.readFileSync(STATE_FILE,"utf8")); }
+  catch { return { devices:{}, gates:{}, routing_state:"OFF" }; }
+}
+function save(s){
+  fs.writeFileSync(STATE_FILE, JSON.stringify(s,null,2));
+}
+const state = load();
+module.exports = { state, save };
+JS
+
+cat > "$BASE/server/server.js" <<'JS'
+const express = require("express");
+const bodyParser = require("body-parser");
+const path = require("path");
+
+const { logAppendix } = require("./runtime/appendix");
+const SM = require("./runtime/state");
+
+const app = express();
+app.use(bodyParser.json({limit:"1mb"}));
+
+const UI_ROOT = path.join(__dirname, "..", "ui");
+app.use("/", express.static(UI_ROOT));
+
+// Expose model registries (read-only)
+app.use("/models", express.static(path.join(__dirname, "..", "models")));
+
+app.get("/api/health", (req,res)=>{
+  res.json({ ok:true, routing_state: SM.state.routing_state, time: Date.now() });
+});
+
+// Gate arm/revoke (visible only; no background)
+app.post("/api/gates/:gate/arm",(req,res)=>{
+  const g=req.params.gate;
+  SM.state.gates[g] = { armed:true, ts:Date.now() };
+  SM.save(SM.state);
+  logAppendix({ event_type:"gate_arm", actor:"creator", surface:"command_center", summary:`Gate armed: ${g}`, payload:{gate:g} });
+  res.json({ ok:true });
+});
+app.post("/api/gates/:gate/revoke",(req,res)=>{
+  const g=req.params.gate;
+  SM.state.gates[g] = { armed:false, ts:Date.now() };
+  SM.save(SM.state);
+  logAppendix({ event_type:"gate_revoke", actor:"creator", surface:"command_center", summary:`Gate revoked: ${g}`, payload:{gate:g} });
+  res.json({ ok:true });
+});
+
+const PORT = process.env.PORT || 7777;
+app.listen(PORT, "0.0.0.0", ()=>{
+  console.log("Ω ∞ Ω — ARORA V25 server listening on port", PORT);
+  console.log("Local: http://127.0.0.1:"+PORT);
+  console.log("LAN:   http://<your-phone-ip>:"+PORT);
+});
+JS
+
+cat > "$BASE/start_local.sh" <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+set -euo pipefail
+cd "$HOME/ARORA_V25/server"
+export PORT=7777
+node server.js
+EOF
+chmod +x "$BASE/start_local.sh"
+
+# -----------------------------
+# UI: Ω glyph overlay always-on
+# -----------------------------
+cat > "$BASE/ui/common/omega_glyph_overlay.js" <<'JS'
+(function(){
+  const id="omega_anchor_glyph";
+  if(document.getElementById(id)) return;
+  const el=document.createElement("div");
+  el.id=id;
+  el.textContent="Ω";
+  el.style.position="fixed";
+  el.style.left="6px";
+  el.style.top="6px";
+  el.style.width="0.25in";
+  el.style.height="0.25in";
+  el.style.lineHeight="0.25in";
+  el.style.fontSize="14px";
+  el.style.opacity="0.25";       // almost invisible
+  el.style.pointerEvents="none"; // never in the way
+  el.style.userSelect="none";
+  el.style.zIndex="999999";
+  document.addEventListener("DOMContentLoaded", ()=>document.body.appendChild(el));
+})();
+JS
+
+# -----------------------------
+# Render stack: quality ladder + simple 360 pano
+# -----------------------------
+cat > "$BASE/render_stack/quality_ladder.js" <<'JS'
+export function pickQuality(){
+  const mem = navigator.deviceMemory || 4;
+  const cores = navigator.hardwareConcurrency || 4;
+  let q = "ULTRA";
+  if(mem <= 3 || cores <= 4) q = "HIGH";
+  if(mem <= 2 || cores <= 2) q = "MED";
+  if(mem <= 1) q = "LOW";
+  return { target:"REAL_LIFE", quality:q, mem, cores };
+}
+JS
+
+cat > "$BASE/render_stack/pano360.js" <<'JS'
+export function mountPano(canvas, imgUrl){
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+  img.crossOrigin="anonymous";
+  let yaw=0, dragging=false, lastX=0;
+
+  function draw(){
+    if(!img.complete){ requestAnimationFrame(draw); return; }
+    const w=canvas.width=canvas.clientWidth;
+    const h=canvas.height=canvas.clientHeight;
+    const iw=img.width, ih=img.height;
+
+    const x = ((yaw % 1)+1)%1;
+    const sx = Math.floor(x * iw);
+    const sw = Math.min(iw - sx, iw);
+
+    ctx.drawImage(img, sx, 0, sw, ih, 0, 0, w, h);
+    if(sw < iw){
+      ctx.drawImage(img, 0, 0, iw - sw, ih, Math.floor((sw/iw)*w), 0, w - Math.floor((sw/iw)*w), h);
+    }
+    requestAnimationFrame(draw);
+  }
+
+  canvas.addEventListener("pointerdown", e=>{dragging=true; lastX=e.clientX; canvas.setPointerCapture(e.pointerId);});
+  canvas.addEventListener("pointermove", e=>{
+    if(!dragging) return;
+    const dx=e.clientX-lastX; lastX=e.clientX;
+    yaw -= dx / 1200;
+  });
+  canvas.addEventListener("pointerup", ()=>dragging=false);
+
+  img.src = imgUrl;
+  requestAnimationFrame(draw);
+}
+JS
+
+# -----------------------------
+# Command Center CSS + HTML + JS (locked layout 5+7)
+# -----------------------------
+cat > "$BASE/ui/command_center/css/style.css" <<'CSS'
+:root{
+  --bg:#050607;
+  --panel:#0b0d10;
+  --line:#1f2730;
+  --text:#d7dde6;
+  --muted:#7a8798;
+}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial;}
+.topTicker{position:sticky;top:0;background:rgba(0,0,0,0.35);border-bottom:1px solid var(--line);padding:6px 10px;font-size:12px;color:var(--muted);}
+.room{padding:10px;display:flex;flex-direction:column;gap:10px;}
+.gridTop{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.gridBottom{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;min-height:120px;padding:10px;overflow:auto;}
+.panel h3{margin:0 0 6px 0;font-size:13px;color:var(--text);font-weight:600;}
+.sub{font-size:11px;color:var(--muted);}
+#B4{grid-column:3 / span 3;}
+.console{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;align-items:stretch;}
+.console .panel{min-height:90px;}
+.btn{background:#0f1318;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:6px 8px;font-size:12px;}
+.btn:active{transform:scale(0.99);}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+input{background:#07090b;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:8px;width:100%;}
+.small{font-size:11px;color:var(--muted);}
+.killswitch{display:flex;gap:10px;align-items:center;}
+.cover{border:1px solid var(--line);border-radius:8px;padding:6px 8px;}
+.red{border:1px solid #5a1b1b;background:#160707;}
+.switches{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.switch{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);}
+.hr{height:1px;background:var(--line);margin:6px 0;}
+CSS
+
+cat > "$BASE/ui/command_center/index.html" <<'HTML'
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Ω ∞ Ω — Command Center (V25)</title>
+  <link rel="stylesheet" href="./css/style.css"/>
+</head>
+<body>
+  <div class="topTicker" id="ticker">
+    Mode: Reality • Routing: OFF • Appendix: OK • Device: Core • US-Cloud: Allowed (US-only) • Sensors: OFF
+  </div>
+
+  <div class="room">
+    <div class="panel">
+      <h3>Ω (Avatar) + Ask Omega</h3>
+      <div class="sub">Outputs labeled: Observed / Declared / Proven / Forecast / Unknown</div>
+      <div class="row" style="margin-top:8px;">
+        <div style="flex:1;">
+          <div class="sub">Avatar Frame (placeholder)</div>
+          <div class="hr"></div>
+          <input id="ask" placeholder="Ask Omega (Reality-only by default)"/>
+          <div class="small" id="ask_out">Idle</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gridTop">
+      <div class="panel" id="T1"><h3>T1 Data Points Catalog</h3><div class="sub">Catalog + selector → loads presets</div></div>
+      <div class="panel" id="T2"><h3>T2 APIs Hub</h3><div class="sub">Registry, scopes, sandbox tests, read-only logs</div></div>
+      <div class="panel" id="T3"><h3>T3 System Core Status</h3><div class="sub">Canon locks + gates + state machine</div></div>
+      <div class="panel" id="T4"><h3>T4 Connections / Networks</h3><div class="sub">Pairing, ports, routes, firewall policy</div></div>
+      <div class="panel" id="T5"><h3>T5 Devices Manager</h3><div class="sub">Devices, permissions, mirror presence</div></div>
+    </div>
+
+    <div class="gridBottom">
+      <div class="panel" id="B1"><h3>B1 Dream→Reality Transfer Governor</h3><div class="sub">OFF by default • Template structure only</div></div>
+      <div class="panel" id="B2"><h3>B2 Avatars</h3><div class="sub">User + Omega + World rigs</div></div>
+      <div class="panel" id="B3"><h3>B3 Dream Themes + Dream Forge Inputs</h3><div class="sub">Loads Dream Forge • not the Forge itself</div></div>
+
+      <div class="panel" id="B4">
+        <h3>B4 LLMs + Vault (Main Bus)</h3>
+        <div class="sub">Local-first: Qwen → Llama → Phi → Mistral</div>
+        <div class="hr"></div>
+        <div id="llm_list" class="small">Loading registry…</div>
+      </div>
+
+      <div class="panel" id="B5"><h3>B5 World Creator</h3><div class="sub">Templates, scene seeds, anchors</div></div>
+      <div class="panel" id="B6"><h3>B6 World Avatars</h3><div class="sub">Per-world NPC/avatar configs</div></div>
+      <div class="panel" id="B7"><h3>B7 System Map / Whole Wiring</h3><div class="sub">Devices→Windows→Screens→Forges→Worlds→APIs→LLMs</div></div>
+    </div>
+
+    <div class="console">
+      <div class="panel">
+        <h3>Kill Switch (Left)</h3>
+        <div class="sub">Flip cover • 9-press intentional</div>
+        <div class="hr"></div>
+        <div class="killswitch">
+          <div class="cover">Cover: <span id="cover_state">DOWN</span></div>
+          <button class="btn red" id="kill_btn">KILL (9x)</button>
+        </div>
+        <div class="small" id="kill_out">Idle</div>
+      </div>
+
+      <div class="panel">
+        <h3>Direction Pad (Center)</h3>
+        <div class="sub">Focus navigation</div>
+        <div class="hr"></div>
+        <div class="row">
+          <button class="btn">UP</button><button class="btn">DOWN</button>
+          <button class="btn">LEFT</button><button class="btn">RIGHT</button>
+          <button class="btn">ENTER</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Switchboard (Right)</h3>
+        <div class="sub">Sensors OFF by default</div>
+        <div class="hr"></div>
+        <div class="switches" id="switches"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>360° Preview Surface (Demo)</h3>
+      <div class="sub">Pointer-drag pano (placeholder) • Real-life quality target with downgrade</div>
+      <div class="hr"></div>
+      <div style="height:240px;">
+        <canvas id="pano" style="width:100%;height:100%;border:1px solid rgba(255,255,255,0.06);border-radius:10px;"></canvas>
+      </div>
+      <div class="small" id="quality_out">Quality: …</div>
+    </div>
+
+    <div class="panel">
+      <h3>Exit Mirror Platform (Exit Only)</h3>
+      <div class="sub">Always present • shows no previews • returns to World Forge (not implemented here)</div>
+    </div>
+  </div>
+
+  <script src="../common/omega_glyph_overlay.js"></script>
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
+HTML
+
+cat > "$BASE/ui/command_center/js/app.js" <<'JS'
+import { pickQuality } from "../../render_stack/quality_ladder.js";
+import { mountPano } from "../../render_stack/pano360.js";
+
+async function loadRegistry(){
+  const r = await fetch("/models/registry/local_families.json").catch(()=>null);
+  if(!r){ document.getElementById("llm_list").textContent="Registry unavailable."; return; }
+  const j = await r.json();
+  document.getElementById("llm_list").textContent =
+    "Local families order: " + (j.local_first_order || []).join(" → ");
+}
+
+function buildSwitches(){
+  const names=["MIC","CAM","GPS","IMU","NET","BLUETOOTH","CAST_TV","LOGGING","STORAGE","XR","DEBUG","SAFE_MODE","FILE_INGEST"];
+  const box=document.getElementById("switches");
+  names.forEach(n=>{
+    const row=document.createElement("div");
+    row.className="switch";
+    const cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.checked=false; // OFF by default
+    const lab=document.createElement("span");
+    lab.textContent=n;
+    row.appendChild(cb); row.appendChild(lab);
+    box.appendChild(row);
+  });
+}
+
+function killSwitch(){
+  let coverUp=false;
+  let presses=0;
+  const cover = document.querySelector(".cover");
+  const coverState = document.getElementById("cover_state");
+  const out = document.getElementById("kill_out");
+  cover.addEventListener("click", ()=>{
+    coverUp=!coverUp;
+    coverState.textContent = coverUp ? "UP" : "DOWN";
+    presses=0;
+    out.textContent="Cover toggled. Presses reset.";
+  });
+
+  document.getElementById("kill_btn").addEventListener("click", ()=>{
+    if(!coverUp){ out.textContent="Blocked: flip cover UP first."; return; }
+    presses++;
+    out.textContent=`Kill presses: ${presses}/9`;
+    if(presses>=9){
+      out.textContent="HALT requested (stub). Routing would stop immediately.";
+      presses=0;
+    }
+  });
+}
+
+function askOmega(){
+  const ask=document.getElementById("ask");
+  const out=document.getElementById("ask_out");
+  ask.addEventListener("keydown", (e)=>{
+    if(e.key!=="Enter") return;
+    const q=ask.value.trim();
+    if(!q) return;
+    out.textContent = "Unknown: (stub) " + q;
+    ask.value="";
+  });
+}
+
+function renderDemo(){
+  const q = pickQuality();
+  document.getElementById("quality_out").textContent =
+    `Quality target: ${q.target} • Selected: ${q.quality} • RAM:${q.mem}GB • Cores:${q.cores}`;
+  const canvas=document.getElementById("pano");
+  // Placeholder pano image (you can swap later with a local file)
+  mountPano(canvas, "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Golde33443.jpg/1024px-Golde33443.jpg");
+}
+
+loadRegistry();
+buildSwitches();
+killSwitch();
+askOmega();
+renderDemo();
+JS
+
+# Make render_stack available under /render_stack for module imports
+ln -sf "$BASE/render_stack" "$BASE/ui/render_stack"
+
+# -----------------------------
+# Tools: safe self-repair + bench verify
+# -----------------------------
+cat > "$BASE/tools/self_repair_policy.json" <<'EOF'
+{
+  "allowed_repairs": [
+    "recreate_missing_generated_files",
+    "fix_invalid_json_formatting_in_state_or_registry",
+    "restore_ui_symlinks"
+  ],
+  "forbidden_repairs": [
+    "changing_canon_meaning",
+    "editing_canon_locks",
+    "modifying_appendix_history",
+    "adding_background_execution"
+  ],
+  "rule": "Repair may restore structure only; never reinterpret canon."
+}
+EOF
+
+cat > "$BASE/tools/self_repair.sh" <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+set -euo pipefail
+BASE="$HOME/ARORA_V25"
+echo "Ω ∞ Ω — Safe Self-Repair (structure-only)"
+
+mkdir -p "$BASE/canon" "$BASE/appendix" "$BASE/ui" "$BASE/server" "$BASE/state" "$BASE/models/registry" "$BASE/models/routing"
+touch "$BASE/appendix/ledger.jsonl"
+
+check_json () { node -e "JSON.parse(require('fs').readFileSync('$1','utf8'))" >/dev/null 2>&1; }
+fix_json () {
+  node - <<NODE
+const fs=require("fs");
+const p="$1";
+try{
+  const j=JSON.parse(fs.readFileSync(p,"utf8"));
+  fs.writeFileSync(p, JSON.stringify(j,null,2));
+  console.log("Reformatted:", p);
+}catch(e){
+  console.log("Skip (invalid, not auto-fixing):", p);
+}
+NODE
+}
+
+for f in "$BASE/models/registry/"*.json "$BASE/models/routing/"*.json "$BASE/state/"*.json; do
+  [ -f "$f" ] || continue
+  if ! check_json "$f"; then
+    echo "⚠️ Invalid JSON (non-canon): $f"
+    fix_json "$f"
+  fi
+done
+
+if [ ! -e "$BASE/ui/render_stack" ]; then
+  ln -sf "$BASE/render_stack" "$BASE/ui/render_stack"
+  echo "Restored UI render_stack link."
+fi
+
+echo "✅ Self-repair done."
+EOF
+chmod +x "$BASE/tools/self_repair.sh"
+
+cat > "$BASE/tools/bench_verify.sh" <<'EOF'
+#!/data/data/com.termux/files/usr/bin/bash
+set -euo pipefail
+BASE="$HOME/ARORA_V25"
+echo "Ω ∞ Ω — Bench Verify (read-only)"
+
+must_exist(){ [ -e "$1" ] || { echo "FAIL missing: $1"; exit 1; }; }
+
+must_exist "$BASE/canon/ARORA_V25_CORE.json"
+must_exist "$BASE/canon/EVENT_TYPES.json"
+must_exist "$BASE/ui/command_center/index.html"
+must_exist "$BASE/server/server.js"
+must_exist "$BASE/appendix/ledger.jsonl"
+must_exist "$BASE/sandboxes/dream_fortress/AIRGAP_PROFILE.json"
+
+echo "PASS: key structure present."
+echo "NOTE: No hosting enabled. Local+LAN only."
+EOF
+chmod +x "$BASE/tools/bench_verify.sh"
+
+# -----------------------------
+# Appendix logging: install begin/complete
+# -----------------------------
+python - <<'PY'
+import json, time, hashlib, os
+base=os.path.expanduser("~/ARORA_V25")
+def log(event_type, summary, payload=None):
+    entry={"ts":time.time(),"event_type":event_type,"actor":"creator","surface":"installer","summary":summary,"payload":payload or {}}
+    raw=json.dumps(entry,sort_keys=True).encode()
+    entry["hash"]=hashlib.sha256(raw).hexdigest()
+    with open(base+"/appendix/ledger.jsonl","a",encoding="utf-8") as f:
+        f.write(json.dumps(entry)+"\n")
+log("install_begin","V25 one-file install begin",{"mode":"both","port":7777})
+log("install_complete","V25 one-file install complete (pre-hosting stop)",{"mode":"both","port":7777})
+print("✅ Appendix entries written.")
+PY
+
+# -----------------------------
+# Export a small “what got installed” note to shared storage
+# -----------------------------
+cat > "$SHARED/README_INSTALLED.txt" <<EOF
+ARORA V25 installed (pre-hosting stop).
+BASE:   $BASE
+OPEN:   http://127.0.0.1:7777/command_center/
+VERIFY: $BASE/tools/bench_verify.sh
+REPAIR: $BASE/tools/self_repair.sh
+EOF
+
+echo
+footer
+```0
